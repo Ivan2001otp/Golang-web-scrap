@@ -12,7 +12,13 @@ import (
 )
 
 var userAgents = []string{
-	"Mozilla/5.0 (Windows NT 10.0; Win64: x64) AppleWebKit/537.36 (KHTML, like Gecko/61.0.31)"}
+	"Mozilla/5.0 (Windows NT 10.0; Win64: x64) AppleWebKit/537.36 (KHTML, like Gecko/61.0.31)",
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/100.0 Mobile Safari/537.36",
+	"Mozilla/5.0 (Linux; Android 13; Pixel 6 Build/TP1A.220621.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Mobile Safari/537.36",
+	"Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/105.0.0.0 Safari/537.36",
+	"Mozilla/5.0 (iPad; CPU OS 16_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1",
+	"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0",
+}
 
 func checkRelative(href string, baseURL string) string {
 	if strings.HasPrefix(href, "/") {
@@ -103,23 +109,24 @@ func Crawl(targetURL string, baseURL string) []string {
 		ok, correctLink := resolveRelativeLinks(link, baseURL)
 
 		if ok {
-			if correctLink != nil {
+			if correctLink != "" {
 				foundUrls = append(foundUrls, correctLink)
 			}
 		}
 
 	}
 	//ParseHTML(resp)
+	return foundUrls
 }
 
 func main() {
 	worklist := make(chan []string)
-	baseDomain := "https://www.theguardian.com"
+	baseDomain := "https://www.redwolf.in/"
 	var n int
 	n++
 
 	go func() {
-		worklist <- []string{"https:www.theguardian.com"}
+		worklist <- []string{"https://www.redwolf.in/"}
 
 	}()
 
@@ -127,7 +134,7 @@ func main() {
 
 	for ; n > 0; n-- {
 
-		list := worklist
+		list := <-worklist
 
 		for _, link := range list {
 			if !seen[link] {
@@ -139,7 +146,7 @@ func main() {
 					if foundLinks != nil {
 						worklist <- foundLinks
 					}
-				}()
+				}(link, baseDomain)
 			}
 		}
 	}
